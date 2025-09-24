@@ -1,0 +1,116 @@
+Short product/UX spec (what the app does for users)
+
+Architecture & tech choices (how it will work, integration notes)
+
+A paste-ready no-questions Replit AI prompt that requests a working, editable prototype implementing the user-side features you described (SOS, panic ringtones to nearby devices, callbacks, voice/chat with EMS).
+
+1) Product / UX spec (user-facing — what users do)
+
+Name suggestion: FireLink Mobile / FireLink Lite
+
+Core user flows:
+
+SOS (one-tap) — user presses SOS → app captures GPS (or manual entry) → sends immediate alert to:
+
+Nearby community app users (within a radius, e.g., 200 m).
+
+Local EMS queue (via API) and registered community responders.
+
+Triggers a panic ringtone/alert sound on nearby devices and a loud local alarm (if permissions allow).
+
+Shows a confirmation screen with estimated ETA of responders (if available) and optional two-way chat/call button.
+
+Send Callbacks — after the SOS, EMS or community responders can press “Request callback” and the user receives an incoming call from an agent (VoIP) or a scheduled callback phone call.
+
+Panic Ringtone to Nearby Devices — when an alert triggers, nearby FireLink apps immediately:
+
+Show a high-priority push notification.
+
+Play a distinct panic ringtone (works in-app / in-browser when app is foreground/background with permission).
+
+Show exact location & quick actions: Navigate, Call Reporter, Mark “I’m coming / assisting”.
+
+Voice & Chat with EMS — built-in real-time chat and one-tap voice call to an EMS agent (via WebRTC or Twilio). Chat supports voice clip uploads, and automatic location sharing.
+
+Offline / Non-smartphone fallback — SMS/USSD fallback to notify neighbors and EMS if user has just a feature phone (future MVP with local SMS gateway or integration with Twilio/Clickatell).
+
+Community Mode (opt-in) — residents can opt in as watchers. They receive nearby alerts and can mark themselves as “en route” to help contain fires early (crowd-response).
+
+Why this will work / lessons from Lumkani:
+
+Lumkani’s success shows community-networked alerts + automated notifications dramatically reduce spread. We replicate the networked-alert idea in software so people get immediate audio/visual cues on their phones and EMS gets the location fast. 
+Squarespace
+AP News
+
+2) Architecture & tech choices (practical — what to build now)
+
+Goal: MVP that runs locally / on Replit but which is production-capable.
+
+Frontend
+
+Build as a PWA (Progressive Web App) so it can be installed on phones and run offline to some degree. PWA supports push notifications and background behavior.
+
+UI: Tailwind + simple responsive pages:
+
+Home/SOS screen (big SOS button).
+
+Community Feed (nearby alerts).
+
+Chat/Call screen.
+
+Settings (toggle community mode, ringtone preference, phone number).
+
+Real-time & push
+
+Socket.IO (WebSocket) for instant in-app real-time updates between server and connected clients.
+
+Web Push (VAPID) for notifications when app is backgrounded/closed.
+
+For immediate audible ringtones when app is open: play an audio file on event (requires user gesture initially to allow autoplay in some browsers — PWA helps).
+
+Server computes proximity (Haversine) to decide which clients get the “panic ringtone” event (this is how Lumkani triggers alarms in a radius). 
+Squarespace
+
+Voice & Chat
+
+Option A (zero-cost dev/test): implement WebRTC peer-to-peer voice + simple datachannel chat (works in-browser; needs signaling via Socket.IO). This is free but requires clients to be online and can be flaky on mobile networks.
+
+Option B (production / stable): integrate Twilio Programmable Voice / Conversations for reliable calls and chat (paid service). I’ll include both options in the README and implement WebRTC for the MVP so you can test locally without cost. (When you want Twilio later, the code will show where to swap.)
+
+SMS / USSD fallback
+
+Integrate with an SMS gateway (Twilio / Clickatell / local aggregator) in v1 to send SMS to registered neighbours or municipal EMS when push fails. Note: this requires a paid account & phone numbers.
+
+Location & Routing
+
+Use Leaflet + OpenStreetMap (no API key) for mapping. Provide instructions to swap to Google Maps if you want routing + driving directions later. (Lumkani uses GPS + gateway for coordinates to services; we emulate that.) 
+Wikipedia
+Lumkani
+
+Database & Backend
+
+Node.js + Express backend for Replit prototype.
+
+Database: SQLite for easy local use (or Postgres for production).
+
+Models: users, alerts, responses, messages.
+
+Alerts store: id, lat, lng, reporter_name, phone, message, timestamp, status.
+
+Security & Auth
+
+Anonymous SOS allowed (no login required).
+
+Community responders and EMS admin accounts are regular users with registration, 2FA optional later.
+
+Simple JWT authentication for protected endpoints (dashboard/agent actions).
+
+Rate-limiting and abuse prevention for SOS endpoints (important in production).
+
+Hardware integration (future)
+
+If you later integrate hardware (heat sensor like Lumkani), have the gateway send HTTPS POST to the alerts API with GPS & heat-event info. That will trigger the same alert flow.
+
+Privacy & Ethics
+
+Implement opt-in location sharing, minimal personal data collection, and clear consent screens. Logs should be deleted after a retention period unless needed for investigations.

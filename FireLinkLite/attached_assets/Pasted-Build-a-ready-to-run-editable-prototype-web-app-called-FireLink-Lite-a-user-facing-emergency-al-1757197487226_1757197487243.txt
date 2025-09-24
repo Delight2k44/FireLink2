@@ -1,0 +1,79 @@
+Build a ready-to-run, editable prototype web app called "FireLink Lite" — a user-facing emergency alert app inspired by Lumkani. Do not ask clarifying questions; implement everything below. Provide all files separately and include a README with run instructions. Comment code extensively so I can edit.
+
+GOALS
+- User can send one-tap SOS that notifies nearby community members with a panic ringtone and notifies EMS agents via server.
+- Users can request callbacks and can voice-chat with an EMS agent (use WebRTC for MVP).
+- Implement community opt-in to receive nearby alerts.
+- Implement radius-based broadcasting (server computes 200m proximity).
+- Build as a PWA so it can be installed and support web push notifications.
+
+TECH STACK & FILE STRUCTURE
+- Backend: Node.js + Express.
+- Real-time: Socket.IO for signaling & instant events.
+- DB: SQLite (via better-sqlite3 or sqlite3). Provide SQL seed script with an admin/agent user sample.
+- Frontend: PWA using plain HTML + Tailwind (or Tailwind CDN) + vanilla JS.
+- Maps: Leaflet + OpenStreetMap.
+- Voice/Chat: WebRTC (datachannel + audio) for one-to-one agent-user calls. Provide simple signaling over Socket.IO.
+- Push: Include Web Push (VAPID) server-side skeleton and instructions. If push requires keys, provide .env.example and mock placeholders.
+- Audio: Include a panic ringtone file and code to play it when an alert targeted to the client is received (foreground). Explain browser autoplay constraints and provide user gesture to enable ringtone.
+
+REQUIRED FEATURES (MVP) — implement exactly:
+1) Home / SOS page (public)
+   - Big, red SOS button.
+   - On click:
+     * Prompt for geolocation; fallback to manual lat/lng entry.
+     * Optional: collect reporter name + phone (optional fields).
+     * POST to backend `/api/alerts` with {lat,lng,name,phone,message}.
+     * Show confirmation: "Alert sent — help is being notified."
+     * After sending, connect to Socket.IO channel for that alert and allow user to open chat/call with on-duty EMS agents.
+
+2) Backend `/api/alerts` and storage
+   - Receive alert, insert into SQLite table `alerts` with fields id, lat, lng, name, phone, message, timestamp, status.
+   - Compute list of active connected clients within 200m (use Haversine formula).
+   - Emit Socket.IO event `alert:new` to:
+     * All admin/agent clients (namespace /agents).
+     * All community clients who are within 200m (namespace /community).
+   - Also store alert and return JSON with alert id and server timestamp.
+
+3) Community client page
+   - Public page that connects to Socket.IO and registers its current location with the server.
+   - When server emits `alert:new` for your client, show a high-priority popup, play a panic ringtone (if user allowed audio), show alert details, and offer quick actions: "Navigate", "Call Reporter", "I am coming".
+   - Show a simple list of recent nearby alerts.
+
+4) Ringtone mechanics
+   - Include an audio file `public/audio/panic.mp3`.
+   - Provide a "Enable Alerts & Sound" button so the user gives a gesture to allow sound autoplay later (explain in UI).
+   - When server sends `play:ringtone` event to a client, play audio and show visual alert.
+
+5) Callback / Call / Chat
+   - Implement WebRTC signaling:
+     * Agent can press "Call" in agent dashboard (for MVP provide a simplified agent page or preseed an agent login).
+     * Use Socket.IO for offer/answer/ICE exchange.
+     * On connection, establish audio stream between agent and user.
+   - Provide fallback to "Request Callback" which stores `callback_requests` in DB so agent can call via phone later.
+
+6) Agent UI (lightweight for prototype)
+   - Provide a `/agent` page (protected by simple password from DB) showing active alerts and integrates with WebRTC to call/report.
+   - Seed DB with an agent user (email: agent@example.com password ChangeMe123!).
+
+7) Maps & navigation
+   - Include Leaflet map on community & agent pages showing alert location and user's location.
+   - Provide "Open in Google Maps" link for routing.
+
+8) Security & README
+   - Provide `.env.example` for secrets (JWT secret, VAPID keys placeholders).
+   - Use JWT for agent login endpoints.
+   - README must include `npm install`, `npm run dev` instructions and how to test multiple browser windows to simulate community, agents, and reporter.
+   - Explain how to replace WebRTC with Twilio in production and how to add SMS fallback (Twilio) and integrate hardware gateways later.
+
+9) Code quality
+   - Modular Node app: server.js, routes/alerts.js, routes/auth.js, db/*.sql or db/init.sql, public/* for frontend files.
+   - Add comments, and top of each file document what to edit to swap services (Twilio, Google Maps, production DB).
+   - Provide seed SQL file that creates tables and inserts one agent user.
+
+DELIVERABLES
+- All file contents (server.js, package.json, public/index.html, public/community.html, public/agent.html, public/js/client.js, public/js/agent.js, css/tailwind via CDN, db/init.sql, README.md).
+- Include `public/audio/panic.mp3` placeholder (or an instruction to add one) and code referencing it.
+- End README with "Next steps" paragraph describing how to integrate low-cost IoT heat sensors (Lumkani-style gateway), how to add SMS/USSD fallback, and how to swap WebRTC for Twilio for more reliable voice.
+
+Do not ask anything. Generate the full code now, with clear inline comments and a README so I can run and edit locally or on Replit.

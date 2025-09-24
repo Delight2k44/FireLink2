@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 0.75rem;
+  --background: hsl(0, 100%, 97%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --primary: hsl(221.2, 83.2%, 53.3%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(0, 100%, 95%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --muted: hsl(0, 50%, 92%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --accent: hsl(0, 80%, 93%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(0, 30%, 88%);
+  --input: hsl(0, 30%, 88%);
+  --ring: hsl(221.2, 83.2%, 53.3%);
+  --emergency: #f0403b;
+  --success: hsl(142, 76%, 36%);
+  --warning: #f0403b;
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: hsl(0, 70%, 8%);
+    --foreground: hsl(210, 40%, 98%);
+    --card: hsl(0, 50%, 12%);
+    --card-foreground: hsl(210, 40%, 98%);
+    --popover: hsl(222.2, 84%, 4.9%);
+    --popover-foreground: hsl(210, 40%, 98%);
+    --primary: hsl(217.2, 91.2%, 59.8%);
+    --primary-foreground: hsl(222.2, 84%, 4.9%);
+    --secondary: hsl(0, 40%, 20%);
+    --secondary-foreground: hsl(210, 40%, 98%);
+    --muted: hsl(0, 35%, 18%);
+    --muted-foreground: hsl(215, 20.2%, 65.1%);
+    --accent: hsl(0, 45%, 22%);
+    --accent-foreground: hsl(210, 40%, 98%);
+    --destructive: hsl(0, 62.8%, 30.6%);
+    --destructive-foreground: hsl(210, 40%, 98%);
+    --border: hsl(0, 25%, 25%);
+    --input: hsl(0, 25%, 25%);
+    --ring: hsl(224.3, 76.3%, 94.1%);
+    --emergency: #f0403b;
+    --success: hsl(142, 76%, 41%);
+    --warning: #f0403b;
+  }
+}
+
+@keyframes pulse-emergency {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer components {
+  .emergency-button {
+    box-shadow: 0 20px 25px -5px rgba(240, 64, 59, 0.3), 0 10px 10px -5px rgba(240, 64, 59, 0.1);
+  }
+
+  .map-container {
+    min-height: 300px;
+    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--accent)) 100%);
+    border-radius: var(--radius);
+    position: relative;
+    border: 2px solid hsl(var(--emergency));
+  }
+
+  .animate-pulse-emergency {
+    animation: pulse-emergency 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+  }
+}
